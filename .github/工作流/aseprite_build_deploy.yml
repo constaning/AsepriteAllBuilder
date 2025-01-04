@@ -1,6 +1,6 @@
-name: Build and deploy Aseprite
+name: Build 和 deploy Aseprite
 
-on:
+于:
   schedule:
     - cron: '0 0 * * *'
   push:
@@ -61,7 +61,7 @@ jobs:
     name: Build Aseprite
     needs: check-version
     if: ${{ needs.check-version.outputs.should_build }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix. }}
     strategy:
        matrix:
          os: [windows-latest]
@@ -96,7 +96,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: cmd
         run: call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=x64
-      - name: (Windows) Setting Visual Studio build environment variables and paths
+      - name: (Windows) Setting Visual Studio build environment variables 和 paths
         if: matrix.os == 'windows-latest'
         uses: seanmiddleditch/gha-setup-vsdevenv@v1
       - name: (Windows) Run CMake
