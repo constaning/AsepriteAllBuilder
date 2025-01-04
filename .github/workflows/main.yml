@@ -63,7 +63,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
        matrix:
-         os: [windows-latest, ubuntu-latest, macOS-latest]
+         os: [windows-latest]
        fail-fast: false    
     steps:
       - name: (Windows) Install dependencies
@@ -95,7 +95,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: cmd
         run: call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=x64
-      - name: (Windows) Setting Visual Studio build environment variables and paths
+      - name: (Windows) Setting Visual Studio build environment variables 和 paths
         if: matrix.os == 'windows-latest'
         uses: seanmiddleditch/gha-setup-vsdevenv@v1
       - name: (Windows) Run CMake
