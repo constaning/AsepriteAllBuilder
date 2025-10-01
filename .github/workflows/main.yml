@@ -22,8 +22,9 @@ jobs:
 
       - name: Download Skia
         run: |
-          curl -LO https://github.com/aseprite/skia/releases/download/m102/aseprite-m102-Win-Release-x64.zip
-          7z x aseprite-m102-Win-Release-x64.zip -oskia
+          curl -LO https://github.com/aseprite/skia/releases/download/m102/Skia-m102-Win-Release-x64.zip
+          if not exist Skia-m102-Win-Release-x64.zip (exit /b 1)
+          7z x Skia-m102-Win-Release-x64.zip -oskia
 
       - name: Configure & Compile
         run: |
