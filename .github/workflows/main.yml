@@ -1,48 +1,48 @@
-name: Build and deploy Aseprite   # 左侧显示的名字
+name: Build Aseprite
 
 on:
-  workflow_dispatch:              # 允许手动
+  workflow_dispatch:             # 手动触发
   schedule:
-    - cron: '0 2 * * *'           # 每天 02:00 UTC
+    - cron: '0 2 * * *'          # 每天 02:00 自动检查更新
 
 jobs:
   build:
     runs-on: windows-latest
     steps:
-      - name: Checkout Aseprite source
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           repository: aseprite/aseprite
-          ref: main
+          ref: main               # 拉官方最新主干
           submodules: recursive
 
-      - name: Install build tools
+      - name: Generate build-info
+        id: info
+        run: |
+          echo "short_sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "build_date=$(date +%Y%m%d)"            >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Build
         run: |
           choco install cmake ninja
-
-      - name: Download Skia
-        run: |
-          Invoke-WebRequest -Uri https://github.com/aseprite/skia/releases/download/m102/Skia-m102-Win-Release-x64.zip -OutFile Skia-m102-Win-Release-x64.zip
-          if (!(Test-Path Skia-m102-Win-Release-x64.zip)) { exit 1 }
-          7z x Skia-m102-Win-Release-x64.zip -oskia
-
-      - name: Configure & Compile
-        run: |
           cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo ^
-                -DLAF_BACKEND=skia ^
-                -DSKIA_DIR=%CD%\skia ^
-                -DSKIA_LIBRARY_DIR=%CD%\skia\out\Release-x64
+                -DLAF_BACKEND=skia -DSKIA_DIR=$SKIA_DIR -DSKIA_LIBRARY_DIR=$SKIA_LIB_DIR
           ninja -C build aseprite
+        env:
+          SKIA_DIR: ${{ github.workspace }}/skia
+          SKIA_LIB_DIR: ${{ github.workspace }}/skia/out/Release-x64
 
-      - name: Pack artifact
+      - name: Pack
         run: |
-          7z a Aseprite-win64.zip .\build\bin\aseprite.exe .\build\bin\data
+          7z a Aseprite-v1.3.15-${{ steps.info.outputs.short_sha }}-Windows.zip ^
+             ./build/bin/aseprite.exe ./build/bin/data
 
-      - name: Upload to release
+      - name: Release
         uses: ncipollo/release-action@v1
         with:
-          tag: nightly-${{ github.run_number }}
-          name: Nightly build ${{ github.run_number }}
-          artifacts: Aseprite-win64.zip
+          tag: v1.3.15-${{ steps.info.outputs.short_sha }}
+          name: Aseprite v1.3.15 (${{ steps.info.outputs.short_sha }})
+          artifacts: Aseprite-v1.3.15-${{ steps.info.outputs.short_sha }}-Windows.zip
           draft: true
+          prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
